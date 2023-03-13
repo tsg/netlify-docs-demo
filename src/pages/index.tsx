@@ -40,6 +40,7 @@ const useAskXataDocs = () => {
       method: "POST",
       body: JSON.stringify({ question, database }),
       headers: { "Content-Type": "application/json" },
+      openWhenHidden: true,
       onmessage(ev) {
         try {
           const { answer = "", records, done } = JSON.parse(ev.data);
