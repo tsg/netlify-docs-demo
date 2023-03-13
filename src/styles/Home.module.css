@@ -177,6 +177,11 @@
   animation: rotation 1s linear infinite;
 }
 
+.relatedDocs a {
+  color: #0070f3;
+  text-decoration: underline;
+}
+
 @keyframes rotation {
   0% {
     transform: rotate(0deg);

@@ -1,4 +1,3 @@
-import { AskResult } from "@xata.io/client";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { getDatabases } from "~/xata";
@@ -8,8 +7,8 @@ export const config = {
 };
 
 const bodySchema = z.object({
+  ids: z.string().array(),
   database: z.string(),
-  question: z.string(),
 });
 
 const handler = async (req: NextRequest): Promise<Response> => {
@@ -19,43 +18,39 @@ const handler = async (req: NextRequest): Promise<Response> => {
     });
   }
 
-  const body = bodySchema.safeParse(await req.json());
+  const raw = await req.json();
+  const body = bodySchema.safeParse(raw);
   if (!body.success) {
     return new Response(JSON.stringify({ message: "Invalid body" }), {
       status: 400,
     });
   }
 
-  const encoder = new TextEncoder();
+  const { ids } = body.data;
+  if (ids.length === 0) {
+    return new Response(JSON.stringify([]), { status: 200 });
+  }
+
+  const params = {
+    filter: { $any: ids.map((id) => ({ id })) },
+    columns: ["id", "title", "slug"],
+  };
+
   const variant = getDatabases().find((db) => db.id === body.data.database);
   if (!variant) {
     return new Response(JSON.stringify({ message: "Invalid database" }), {
       status: 400,
     });
   }
-
   const { client: xata, lookupTable, options } = variant;
-  const stream = new ReadableStream({
-    async start(controller) {
-      xata.db[lookupTable].ask(body.data.question, {
-        ...options,
-        onMessage: (message: AskResult) => {
-          controller.enqueue(encoder.encode(`event: message\n`));
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify(message)}\n\n`)
-          );
-        },
-      });
-    },
-  });
 
-  return new Response(stream, {
-    headers: {
-      Connection: "keep-alive",
-      "Cache-Control": "no-cache, no-transform",
-      "Content-Type": "text/event-stream;charset=utf-8",
-    },
-  });
+  const result = await xata.db[lookupTable]
+    .filter({
+      $any: ids.map((id) => ({ id })),
+    })
+    .getMany(params);
+
+  return new Response(JSON.stringify(result), { status: 200 });
 };
 
 export default handler;
