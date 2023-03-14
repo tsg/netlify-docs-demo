@@ -37,6 +37,10 @@ Here are a few questions you can ask the bot:
 * How do I deploy a site?
 * Can I deploy a next.js app on netlify?
 * I get a large function error. How can I fix it?
+* How can I setup a form?
+* How can I test edge functions locally?
+* What is the difference between ISR and SSG?
+* What is netlify graph?
 * Why did Netlify buy Gatsby?
 ---
 

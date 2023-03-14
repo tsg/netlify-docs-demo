@@ -51,6 +51,12 @@ const useAskXataDocs = () => {
           setIsLoading(!done);
         } catch (e) {}
       },
+      onclose() {
+        // do nothing to stop the operation
+      },
+      onerror(err) {
+        throw err; // rethrow to stop the operation
+      },
     });
   }, []);
 
