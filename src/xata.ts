@@ -26,8 +26,15 @@ export const getDatabases = (): Database[] => {
         ],
         searchType: "keyword",
         search: {
-          fuzziness: 1,
-          prefix: "phrase",
+          boosters: [
+            {
+              valueBooster: {
+                value: "docs.netlify.com/edge-functions/overview/index.html",
+                column: "slug",
+                factor: 10,
+              },
+            },
+          ],
         },
       },
     },
